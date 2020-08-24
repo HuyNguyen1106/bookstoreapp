@@ -36,6 +36,7 @@ class Book(db.Model):
     description = Column(String(255), nullable=True)
     price = Column(Float, default=0)
     image = Column(String(255), nullable=True)
+    instock = Column(Integer, default=0)
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
     author_id = Column(Integer, ForeignKey(Author.id), nullable=False)
 
