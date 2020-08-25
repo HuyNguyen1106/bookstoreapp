@@ -12,4 +12,4 @@ db = SQLAlchemy(app=app)
 
 admin = Admin(app=app,name="QUAN LY NHA SACH", template_mode="bootstrap3")
 
-#login = LoginManager(app=app)
+login = LoginManager(app=app)
