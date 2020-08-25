@@ -58,22 +58,24 @@ class Book(db.Model):
     def __str__(self):
         return self.title
 
+
 class Order(db.Model):
     __tablename__ = "order"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String())
+    name = Column(String(50))
     orderday = Column(String(10))
-    book_id = Column( Integer, ForeignKey(Book.id), nullable=False)
+    book_id = Column(Integer, ForeignKey(Book.id), nullable=False)
 
     def __str__(self):
         return self.name
 
-class Order_Detail(db.Model):
-    __tablenam__ = "order_detail"
 
-    order_id = Column(Integer, ForeignKey(Order.id), nullable=False)
-    book_id = Column(Integer, ForeignKey(Book.id), nullable=False)
+class OrderDetail(db.Model):
+    __tablename__ = "order_detail"
+
+    order_id = Column(Integer, ForeignKey(Order.id), primary_key=True)
+    book_id = Column(Integer, ForeignKey(Book.id), primary_key=True)
     quantity = Column(Integer, nullable=False)
     price = Column(Float, default=0)
 
@@ -81,50 +83,55 @@ class Order_Detail(db.Model):
         return self.quantity + "  " + self.price
 
 
+class IsAccessible(BaseView):
+    def is_accessible(self):
+        return current_user.is_authenticated
 
-class CategoryView(ModelView):
+
+class CategoryView(ModelView, IsAccessible):
     column_display_pk = True
     can_create = True
     form_columns = ("name",)
 
-    def is_accessible(self):
-        return current_user.is_authenticated
 
-
-class AuthorView(ModelView):
+class AuthorView(ModelView, IsAccessible):
     column_display_pk = True
     can_create = True
     form_columns = ("firstname","lastname","dateofbirth",)
 
-    def is_accessible(self):
-        return current_user.is_authenticated
 
-
-class BookView(ModelView):
+class BookView(ModelView, IsAccessible):
     column_display_pk = True
     can_create = True
     can_export = True
 
-    def is_accessible(self):
-        return current_user.is_authenticated
+
+class OrderView(ModelView, IsAccessible):
+    column_display_pk = True
+    can_create = True
+    can_export = True
+    can_set_page_size = True
 
 
-class LogoutView(BaseView):
+class ODetailView(ModelView, IsAccessible):
+    column_display_pk = True
+    can_create = True
+    can_export = True
+
+
+class LogoutView(IsAccessible):
     @expose("/")
     def index(self):
         logout_user()
 
         return redirect("/admin")
 
-    def is_accessible(self):
-        return current_user.is_authenticated
-
 
 admin.add_view(CategoryView(Category, db.session))
 admin.add_view(AuthorView(Author, db.session))
 admin.add_view(BookView(Book, db.session))
-admin.add_view(ModelView(Order, db.session))
-admin.add_view(ModelView(Order_Detail, db.sessions))
+admin.add_view(OrderView(Order, db.session))
+admin.add_view(ODetailView(OrderDetail, db.session))
 admin.add_view(LogoutView(name="Logout"))
 
 
