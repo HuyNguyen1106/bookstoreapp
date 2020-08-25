@@ -58,6 +58,29 @@ class Book(db.Model):
     def __str__(self):
         return self.title
 
+class Order(db.Model):
+    __tablename__ = "order"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String())
+    orderday = Column(String(10))
+    book_id = Column( Integer, ForeignKey(Book.id), nullable=False)
+
+    def __str__(self):
+        return self.name
+
+class Order_Detail(db.Model):
+    __tablenam__ = "order_detail"
+
+    order_id = Column(Integer, ForeignKey(Order.id), nullable=False)
+    book_id = Column(Integer, ForeignKey(Book.id), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    price = Column(Float, default=0)
+
+    def __str__(self):
+        return self.quantity + "  " + self.price
+
+
 
 class CategoryView(ModelView):
     column_display_pk = True
@@ -100,7 +123,10 @@ class LogoutView(BaseView):
 admin.add_view(CategoryView(Category, db.session))
 admin.add_view(AuthorView(Author, db.session))
 admin.add_view(BookView(Book, db.session))
+admin.add_view(ModelView(Order, db.session))
+admin.add_view(ModelView(Order_Detail, db.sessions))
 admin.add_view(LogoutView(name="Logout"))
+
 
 if __name__ == "__main__":
     db.create_all()
