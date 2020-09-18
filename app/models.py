@@ -1,28 +1,39 @@
-from sqlalchemy import Column, Integer, String, Float,Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
-from flask_admin.contrib.sqla import ModelView
-from flask_admin import BaseView, expose
-from flask import redirect
-from app import db, admin
-from flask_login import UserMixin, current_user, logout_user
+from app import db
+from flask_login import UserMixin
+from datetime import datetime
+import enum
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = "user"
+class BaseModel(db.Model):
+    __abstract__ = True
     id = Column(Integer, primary_key=True, autoincrement=True)
+
+
+class Role(enum.Enum):
+    ADMIN = 0
+    USER = 1
+
+
+class User(BaseModel, UserMixin):
+    __tablename__ = "user"
+
     name = Column(String(50), nullable=False)
     active = Column(Boolean, default=True)
-    username = Column(String(50), nullable=False)
-    password = Column(String(50), nullable=False)
+    username = Column(String(50), nullable=False, unique=True)
+    password = Column(String(100), nullable=False)
+    address = Column(String(255))
+    phone = Column(String(10))
+    user_role = Column(Enum(Role), default=Role.USER)
 
     def __str__(self):
         return self.name
 
 
-class Category(db.Model):
+class Category(BaseModel):
     __tablename__ = "category"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     books = relationship("Book", backref='category', lazy=True)
 
@@ -30,10 +41,9 @@ class Category(db.Model):
         return self.name
 
 
-class Author(db.Model):
+class Author(BaseModel):
     __tablename__ = "author"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
     firstname = Column(String(10), nullable=False)
     lastname = Column(String(50), nullable=False)
     dateofbirth = Column(String(10))
@@ -43,32 +53,35 @@ class Author(db.Model):
         return self.lastname + " " + self.firstname
 
 
-class Book(db.Model):
+class Book(BaseModel):
     __tablename__ = "book"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(100), nullable=False)
     description = Column(String(255), nullable=True)
     price = Column(Float, default=0)
     image = Column(String(255), nullable=True)
-    instock = Column(Integer, default=0)
+    view_count = Column(Integer, default=0)
+    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now())
     category_id = Column(Integer, ForeignKey(Category.id), nullable=False)
     author_id = Column(Integer, ForeignKey(Author.id), nullable=False)
+    orders = relationship("OrderDetail", backref="book", lazy=True)
 
     def __str__(self):
         return self.title
 
 
-class Order(db.Model):
+class Order(BaseModel):
     __tablename__ = "order"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50))
-    orderday = Column(String(10))
-    book_id = Column(Integer, ForeignKey(Book.id), nullable=False)
+    order_day = Column(DateTime, default=datetime.now())
+    ship_address = Column(String(255), nullable=False)
+    ship_phone = Column(String(10), nullable=False)
+    details = relationship("OrderDetail", backref="order", lazy=True)
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class OrderDetail(db.Model):
@@ -76,63 +89,8 @@ class OrderDetail(db.Model):
 
     order_id = Column(Integer, ForeignKey(Order.id), primary_key=True)
     book_id = Column(Integer, ForeignKey(Book.id), primary_key=True)
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(Integer, default=0)
     price = Column(Float, default=0)
-
-    def __str__(self):
-        return self.quantity + "  " + self.price
-
-
-class IsAccessible(BaseView):
-    def is_accessible(self):
-        return current_user.is_authenticated
-
-
-class CategoryView(ModelView, IsAccessible):
-    column_display_pk = True
-    can_create = True
-    form_columns = ("name",)
-
-
-class AuthorView(ModelView, IsAccessible):
-    column_display_pk = True
-    can_create = True
-    form_columns = ("firstname","lastname","dateofbirth",)
-
-
-class BookView(ModelView, IsAccessible):
-    column_display_pk = True
-    can_create = True
-    can_export = True
-
-
-class OrderView(ModelView, IsAccessible):
-    column_display_pk = True
-    can_create = True
-    can_export = True
-    can_set_page_size = True
-
-
-class ODetailView(ModelView, IsAccessible):
-    column_display_pk = True
-    can_create = True
-    can_export = True
-
-
-class LogoutView(IsAccessible):
-    @expose("/")
-    def index(self):
-        logout_user()
-
-        return redirect("/admin")
-
-
-admin.add_view(CategoryView(Category, db.session))
-admin.add_view(AuthorView(Author, db.session))
-admin.add_view(BookView(Book, db.session))
-admin.add_view(OrderView(Order, db.session))
-admin.add_view(ODetailView(OrderDetail, db.session))
-admin.add_view(LogoutView(name="Logout"))
 
 
 if __name__ == "__main__":

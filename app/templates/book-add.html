@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Them san pham</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+</head>
+<body>
+    <h1 class="text-center text-success">
+        {% if request.args.get('book_id') %}CẬP NHẬT{% else %}THÊM{% endif %} SẢN PHẨM
+    </h1>
+    <div class="container">
+        {% if err %}
+        <div class="alert alert-danger">
+            {{ err }}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Ten san pham</label>
+                <input type="text" name="title" class="form-control" value="{{ book.title }}" />
+            </div>
+            <div class="form-group">
+                <label>Gia san pham</label>
+                <input type="number" value="{{ book.price }}" name="price" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Anh san pham</label>
+                <input type="file" value="{{ book.image }}" name="image" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Mo ta san pham</label>
+                <textarea class="form-control" name="description">{{ book.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Loai sach</label>
+                <select class="form-control" name="category_id">
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id==book.category_id %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tac gia</label>
+                <select class="form-control" name="author_id">
+                    {% for aut in authors %}
+                    <option value="{{ aut.id }}" {% if aut.id==book.author_id %}selected{% endif %}>
+                        {{ aut }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="submit"
+                       value="{% if request.args.get('book_id') %}CẬP NHẬT{%else%}THÊM{% endif %} SẢN PHẨM"
+                       class="btn btn-danger" />
+            </div>
+        </form>
+        </div>
+</body>
+</html>
