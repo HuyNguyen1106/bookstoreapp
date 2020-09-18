@@ -1,0 +1,29 @@
+{% extends 'base/master.html' %}
+
+
+{% block body %}
+<div class="container">
+    <h1>User Profile</h1>
+    <table class="table">
+        <dt>
+            Name
+        </dt>
+        <dd>
+            {{ user.name }}
+        </dd>
+        <dt>
+            Address
+        </dt>
+        <dd>
+            {{ user.address }}
+        </dd>
+        <dt>
+            Phone
+        </dt>
+        <dd>
+            {{ user.phone }}
+        </dd>
+    </table>
+</div>
+
+{% endblock %}

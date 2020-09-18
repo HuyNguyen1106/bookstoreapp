@@ -1,0 +1,28 @@
+{% extends 'base/master.html' %}
+
+{% block body %}
+    <div class="container">
+        <h2>Result found: {{ size }} record(s)</h2>
+        <div class="row">
+            {% for item in result %}
+            <div class="col-md-3" style="width: 20rem;">
+                  <img class="card-img-top"
+                       src="{{ url_for('static', filename='')}}{{ item.image }}"
+                       alt="{{ item.title }}">
+                  <div class="card-body">
+                      <hr>
+                      <h5 class="card-title"><strong>{{ item.title }}</strong></h5>
+                        <p class="card-text">{{ item.price }} VNĐ</p>
+                        <a class="btn btn-primary"
+                           href="javascript:;"
+                           onclick="add_to_cart({{item.id}}, '{{item.title}}', '{{item.author}}', {{item.price}})">
+                            Add to cart
+                        </a>
+                  </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+{% endblock %}
